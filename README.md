@@ -1,1 +1,1 @@
-# onep-cli
+# OneP CLI #
