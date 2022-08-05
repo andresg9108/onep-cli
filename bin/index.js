@@ -1,58 +1,74 @@
 #!/usr/bin/env node
+var oApp = {};
+
+oApp.fs = require('fs');
+oApp.commander = require('commander');
+oApp.useful = require('../lib/useful.js');
+oApp.commands = require('../controller/commands.js');
+
+let sPath = oApp.useful.getPath();
+sPath = `${sPath}/onep-cli/package.json`;
+oApp.packageJson = JSON.parse(oApp.fs.readFileSync(sPath, 'utf-8'));
 
 try{
-	var oManypCli = require('../lib/index.js');
+	oApp.commander.version(oApp.packageJson.version)
+	.description(oApp.packageJson.description);
 
-	const aArgs = process.argv.splice(process.execArgv.length + 2);
-	const sCommand = aArgs[0];
 
-	switch (sCommand) {
-		case 'i':
-			oManypCli.install();
-			break;
-		case 'install':
-			oManypCli.install();
-			break;
-		case 'u':
-			oManypCli.update();
-			break;
-		case 'update':
-			oManypCli.update();
-			break;
-		case 's':
-			oManypCli.start();
-			break;
-		case 'start':
-			oManypCli.start();
-			break;
-		case 'sv':
-			oManypCli.server();
-			break;
-		case 'server':
-			oManypCli.server();
-			break;
-		case 'l':
-			oManypCli.launch();
-			break;
-		case 'launch':
-			oManypCli.launch();
-			break;
-		case '-h':
-			oManypCli.help();
-			break;
-		case 'help':
-			oManypCli.help();
-			break;
-		case '-v':
-			oManypCli.version();
-			break;
-		case 'version':
-			oManypCli.version();
-			break;
-		default:
-			throw(`The instruction "${sCommand}" is not recognized. Run "manyp-cli help" to get help.`);
-			break;
-	}
+	oApp.commander
+	.action(() => {
+		throw(1);
+	});
+
+	// Install package onep in the current folder.
+	oApp.commander.command('install')
+	.alias('i')
+	.description('Install package onep in the current folder.')
+	.action(() => {
+		oApp.commands.install();
+	});
+
+	// Update all onep packages in the current folder.
+	oApp.commander.command('update')
+	.alias('u')
+	.description('Update all onep packages in the current folder.')
+	.action(() => {
+		oApp.commands.update();
+	});
+
+	// Makes our project aware of the changes to automatically execute the corresponding commands.
+	oApp.commander.command('start')
+	.alias('s')
+	.description('Makes our project aware of the changes to automatically execute the corresponding commands.')
+	.action(() => {
+		oApp.commands.start();
+	});
+
+	// Run only the local server.
+	oApp.commander.command('server')
+	.alias('sv')
+	.description('Run only the local server.')
+	.action(() => {
+		oApp.commands.server();
+	});
+
+	// Execute the "launch" script of our "package.json".
+	oApp.commander.command('launch')
+	.alias('l')
+	.description('Execute the "launch" script of our "package.json".')
+	.action(() => {
+		oApp.commands.launch();
+	});
+
+	oApp.commander.parse(process.argv);
 }catch(e){
-	console.log(` Error:\n ${e}`);
+	switch(e){
+		case 1:
+			console.log(` Error: The instruction is not recognized. Run "onep-cli -h" to get help.`);
+        	break;
+        default:
+        	console.log(` Unexpected error.`)
+        	console.log(e)
+        	break;
+    }
 }
